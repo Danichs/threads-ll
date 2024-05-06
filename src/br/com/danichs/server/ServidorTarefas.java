@@ -13,6 +13,10 @@ public class ServidorTarefas {
         while (true) {
             Socket socket = servidor.accept();
             System.out.println("aceitando novo cliente na porta : " + socket.getPort());
+
+            DistribuirTarefas distribuirTarefas = new DistribuirTarefas(socket);
+            Thread threadCliente = new Thread(distribuirTarefas);
+            threadCliente.start();
         }
     }
 }
