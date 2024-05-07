@@ -3,6 +3,7 @@ package br.com.danichs.server;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -11,11 +12,13 @@ public class DistribuirTarefas implements Runnable {
     private Socket socket;
     private ServidorTarefas servidor;
     private ExecutorService threadPool;
+    private BlockingQueue<String> filaComandos;
 
-    public DistribuirTarefas(ExecutorService threadPool, Socket socket, ServidorTarefas servidor) {
+    public DistribuirTarefas(ExecutorService threadPool, BlockingQueue<String> filaComandos, Socket socket, ServidorTarefas servidor) {
         this.socket = socket;
         this.servidor = servidor;
         this.threadPool = threadPool;
+        this.filaComandos = filaComandos;
     }
 
     @Override
@@ -52,6 +55,12 @@ public class DistribuirTarefas implements Runnable {
 
                     break;
                 }
+                case "c3" : {
+
+                    this.filaComandos.put(comando); // bloqueia
+                    saidaCliente.println("comando c3 adicionado na fila");
+                    break;
+                }
                 case "fim" : {
                     saidaCliente.println("Desligando o servidor");
                     servidor.parar();
@@ -63,7 +72,7 @@ public class DistribuirTarefas implements Runnable {
                 }
             }
 
-            System.out.println(comando);
+//            System.out.println(comando);
         }
             saidaCliente.close();
             entradaCliente.close();
