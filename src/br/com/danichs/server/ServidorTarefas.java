@@ -35,7 +35,7 @@ public class ServidorTarefas {
                 Socket socket = servidor.accept();
                 System.out.println("aceitando novo cliente na porta : " + socket.getPort());
 
-                DistribuirTarefas distribuirTarefas = new DistribuirTarefas(socket, this);
+                DistribuirTarefas distribuirTarefas = new DistribuirTarefas(threadPool, socket, this);
                 threadPool.execute(distribuirTarefas);
             } catch (SocketException e) {
                 System.out.println("SocketException, Está rodando ? " + this.estaRodando);
