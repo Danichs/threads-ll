@@ -1,26 +1,51 @@
 package br.com.danichs.server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ServidorTarefas {
-    public static void main(String[] args) throws Exception {
-        
-        
+
+    private ServerSocket servidor;
+    private ExecutorService threadPool;
+    private boolean estaRodando;
+
+    public ServidorTarefas() throws IOException{
         System.out.println("--- Iniciando servidor---");
-        ServerSocket servidor = new ServerSocket(12345);
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+        this.servidor = new ServerSocket(12345);
+        this.threadPool = Executors.newCachedThreadPool();
+        this.estaRodando = true;
+    }
 
+    public void parar() throws IOException {
+        estaRodando = false;
+        servidor.close();
+        threadPool.shutdown();
+    }
 
-        while (true) {
-            Socket socket = servidor.accept();
-            System.out.println("aceitando novo cliente na porta : " + socket.getPort());
+    public void rodar() throws IOException{
 
-            DistribuirTarefas distribuirTarefas = new DistribuirTarefas(socket);
-            threadPool.execute(distribuirTarefas);
+        while (this.estaRodando) {
+            try {
+                Socket socket = servidor.accept();
+                System.out.println("aceitando novo cliente na porta : " + socket.getPort());
+
+                DistribuirTarefas distribuirTarefas = new DistribuirTarefas(socket, this);
+                threadPool.execute(distribuirTarefas);
+            } catch (SocketException e) {
+                System.out.println("SocketException, Está rodando ? " + this.estaRodando);
+            }
         
         }
+    }
+    public static void main(String[] args) throws Exception {
+        
+        ServidorTarefas servidor = new ServidorTarefas();
+        servidor.rodar();
+        servidor.parar();
+
     }
 }
